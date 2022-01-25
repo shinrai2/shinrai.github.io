@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Redirecting...</title>
+        <style>
+            .lds-ellipsis {
+                display: inline-block;
+                position: relative;
+                width: 80px;
+                height: 80px;
+            }
+            .lds-ellipsis div {
+                position: absolute;
+                top: 33px;
+                width: 13px;
+                height: 13px;
+                border-radius: 50%;
+                background: #fff;
+                animation-timing-function: cubic-bezier(0, 1, 1, 0);
+            }
+            .lds-ellipsis div:nth-child(1) {
+                left: 8px;
+                animation: lds-ellipsis1 0.6s infinite;
+            }
+            .lds-ellipsis div:nth-child(2) {
+                left: 8px;
+                animation: lds-ellipsis2 0.6s infinite;
+            }
+            .lds-ellipsis div:nth-child(3) {
+                left: 32px;
+                animation: lds-ellipsis2 0.6s infinite;
+            }
+            .lds-ellipsis div:nth-child(4) {
+                left: 56px;
+                animation: lds-ellipsis3 0.6s infinite;
+            }
+            @keyframes lds-ellipsis1 {
+                0% {
+                    transform: scale(0);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+            @keyframes lds-ellipsis3 {
+                0% {
+                    transform: scale(1);
+                }
+                100% {
+                    transform: scale(0);
+                }
+            }
+            @keyframes lds-ellipsis2 {
+                0% {
+                    transform: translate(0, 0);
+                }
+                100% {
+                    transform: translate(24px, 0);
+                }
+            }
+        </style>
+    </head>
+    <body style="background-color: #2d2e2c; height: 100%; margin: 0">
+        <div class="lds-ellipsis" style="top: 50%; left: 50%; transform: translate(-50%, -80%)">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </body>
+    <script>
+        function getUrl(varname) {
+            let vars = window.location.search.substring(1).split("&");
+            for (let i = 0; i < vars.length; i++) {
+                let pair = vars[i].split("=");
+                if (pair[0] == varname) {
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+            return undefined;
+        }
+        function isLocal(url, to, args) {
+            let styleDom = document.createElement("link");
+            styleDom.href = url + "?t=" + Date.now();
+            styleDom.rel = "stylesheet";
+            styleDom.type = "text/css";
+            styleDom.onerror = function () {
+                to("remote", ...args);
+            };
+            styleDom.onload = function () {
+                to("local", ...args);
+            };
+            document.getElementsByTagName("head").item(0).appendChild(styleDom);
+        }
+
+        function toHandle(state, fn, args) {
+            let url = getUrl(state);
+            if (url != undefined) fn(url, ...args);
+            else console.error("cannot handle: [" + state + "] => " + fn);
+        }
+
+        function gen(test, local, remote) {
+            let g = (n, u, t) => (t ? "" : "&") + n + "=" + encodeURIComponent(u);
+            console.log(
+                location.href.split("?")[0] + "?" + g("test", test, 1) + g("local", local) + g("remote", remote)
+            );
+        }
+
+        toHandle("test", isLocal, [toHandle, [(url) => window.location.replace(url), [undefined]]]);
+    </script>
+</html>
